@@ -1,11 +1,7 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Any, Dict, Optional
 
-class DocCreate(BaseModel):
-    title: str
-    content: str
-    metadata: Optional[dict] = None
-
-class DocSearch(BaseModel):
-    query: str
-    limit: int = 5
+class ChatRequest(BaseModel):
+    userid: Optional[str] = None
+    text: str
+    condition: Optional[Dict[str, Any]] = {}

@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 from common.logger import logger
 from common.constant import Const
 
-# from route.chat import router as chat_router
+from route.chat import router as chat_router
 
 origins = ["http://localhost:5173", "http://localhost:3000"]
 
@@ -54,7 +54,7 @@ app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True
 print(f"sys.executable={sys.executable}")
 print(f"sys.version={sys.version.splitlines()[0]}")
 
-# app.include_router(chat_router, prefix="/chat/")
+app.include_router(chat_router, prefix="/chat")
 
 # 예를 들어, localhost:8000/gigwork/doc_query/docid 라우팅인데 localhost:8000/gigwork/doc_query 만으로 요청시
 # fastapi가 { "detail": "Not Found" }으로 응답하는데 아래 @app.exception_handler(Exception)로 걸리지 않고 있음

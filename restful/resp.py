@@ -1,30 +1,33 @@
-from fastapi import HTTPException, status
+from fastapi import status, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 from typing import Any, Optional, Dict, List
-from datetime import date, datetime
 from common.constant import Const
 
-# response_model
 class CodeMsgBase(BaseModel):
     code: str = "0"
     msg: str = ""
 
 class Common(CodeMsgBase): # allow rs to be any JSON-serializable structure (dict or list)
     rs: Any = Field(default_factory=dict) # Field는 그냥 값을 담는 그릇이라 보면 됨. 여러 인스턴스가 같은 dict 객체를 공유하는 버그를 피함
-    reply: Optional[Any] = None
+    # reply: Optional[Any] = None
+
+def rsObj(obj: Optional[Dict[str, Any]] = {}):
+    return {
+        "rs": obj
+    }
     
 def rsError(code=Const.CODE_NOT_OK, msg="", is500=False):
     payload = {
         "code": code,
         "msg": msg
-    }    
+    }
     status_code=status.HTTP_200_OK
     if is500:
         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR        
     return JSONResponse(status_code=status_code, content=jsonable_encoder(payload))
-   
+
 # def raiseHttpEx(code=Const.CODE_NOT_OK, msg="", statusCode=status.HTTP_200_OK):
 #     # 클라이언트에서 axios 호출시 status.HTTP_200_OK이 아니면 try catch의 catch (ex)로 전달됨. status.HTTP_200_OK이면 try문 안에서 계속됨
 #     # raise HTTPException( # headers={ "WWW-Authenticate": "Bearer" } => 옵션
