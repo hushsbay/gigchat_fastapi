@@ -50,7 +50,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
-logger.info("Server started.")
 
 print(f"sys.executable={sys.executable}")
 print(f"sys.version={sys.version.splitlines()[0]}")

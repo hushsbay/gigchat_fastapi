@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+pgvector
+asyncpg
+psycopg2-binary
+langchain
+langgraph
+openai
+numpy
+requests
