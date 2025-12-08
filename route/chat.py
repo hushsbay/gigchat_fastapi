@@ -24,11 +24,10 @@ def chat_endpoint(payload: ChatRequest):
         #     "response": result_state.get("response"),
         #     "result": result_state.get("result"),
         #     "state": result_state,
-        # }
-        # raise Exception("text는 필수입니다!!!")
+        # }        
         return rsObj({ 
             "aaa": "11111", "bbb": "22222" 
         })
-    except Exception as e:
+    except Exception as e: # 예) raise Exception("Error")을 통해 여기로 전달됨
         logger.exception("chat_endpoint_error : %s", e)
         return rsError(Const.CODE_NOT_OK, str(e), True)
