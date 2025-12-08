@@ -56,7 +56,6 @@ def _normalize(cond: Dict[str, Any]) -> Dict[str, Any]:
         "start_time": None,
         "end_time": None,
         "hourly_wage": None,
-        "requirements": None,
         "category": None
     }
     base.update(cond or {})

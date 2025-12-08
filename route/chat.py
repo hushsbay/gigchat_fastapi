@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import Union
-# from graph.chat_graph import workflow, ChatState
+from graph.chat_graph import workflow, ChatState
 from restful.rqst import ChatRequest
 from restful.resp import CodeMsgBase, Common, rsObj, rsError
 from common.logger import logger
@@ -13,20 +13,19 @@ def chat_endpoint(payload: ChatRequest):
     try:        
         print(f'text===={payload.text}')
         print(f'condition===={payload.condition}')
-        # state = ChatState(
-        #     userid=payload.userid,
-        #     text=payload.text,
-        #     condition=payload.condition or {}
-        # )
-        # result_state = workflow.invoke(state)
-        # return {
-        #     "success": True,
-        #     "response": result_state.get("response"),
-        #     "result": result_state.get("result"),
-        #     "state": result_state,
-        # }        
-        return rsObj({ 
-            "aaa": "11111", "bbb": "22222" 
+        state = ChatState(
+            userid=payload.userid,
+            text=payload.text,
+            condition=payload.condition or {},
+            search=payload.search
+        )
+        result_state = workflow.invoke(state)
+        print(f'result_state $$$$$ {result_state}')
+        return rsObj({
+            "job_related": result_state.get("job_related"),
+            "condition": result_state.get("condition"),
+            "result": result_state.get("result"),
+            "reply": result_state.get("reply")
         })
     except Exception as e: # 예) raise Exception("Error")을 통해 여기로 전달됨
         logger.exception("chat_endpoint_error : %s", e)

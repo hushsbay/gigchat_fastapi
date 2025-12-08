@@ -5,3 +5,4 @@ class ChatRequest(BaseModel):
     userid: Optional[str] = None
     text: str
     condition: Optional[Dict[str, Any]] = {}
+    search: bool = False
