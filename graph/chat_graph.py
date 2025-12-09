@@ -6,7 +6,7 @@ from graph.nodes.check_search import check_search
 from graph.nodes.classify_input import classify_input
 from graph.nodes.decide_search_type import decide_search_type
 from graph.nodes.sql_search import sql_search
-from gigchat_fastapi.graph.nodes.hybrid_search import hybrid_search
+from graph.nodes.hybrid_search import hybrid_search
 
 DEFAULT_CONDITION = {
     "gender": None,
