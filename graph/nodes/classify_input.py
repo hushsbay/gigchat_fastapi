@@ -1,4 +1,4 @@
-from llm.openai import LLMClient
+from common_fastapi.ai.llm_openai import LLMClient
 
 llm = LLMClient()
 
@@ -62,10 +62,10 @@ def classify_input(state):
     ]
     res = llm.chat(messages)
     
-    state.is_job_related = "예" in res
+    state.job_related = "예" in res
     
-    if not state.is_job_related:
+    if not state.job_related:
         state.response = "죄송합니다. 저는 일자리 검색과 관련된 질문에만 답변할 수 있습니다."
     
-    print(f"[classify_input] LLM response: '{res}', is_job_related={state.is_job_related}")
+    print(f"[classify_input] LLM response: '{res}', job_related={state.job_related}")
     return state

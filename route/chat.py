@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import Union
 from graph.chat_graph import workflow, ChatState
-from restful.rqst import ChatRequest
-from restful.resp import CodeMsgBase, Common, rsObj, rsError
-from common.logger import logger
-from common.constant import Const
+from common_fastapi.restful.rqst import ChatRequest
+from common_fastapi.restful.resp import CodeMsgBase, Common, rsObj, rsError
+from common_fastapi.shared.logger import logger
+from common_fastapi.shared.constant import Const
 
 router = APIRouter()
 

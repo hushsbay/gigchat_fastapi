@@ -1,6 +1,6 @@
 import json
 from typing import Any, Dict
-from llm.openai import LLMClient
+from common_fastapi.ai.llm_openai import LLMClient
 
 llm = LLMClient()
 
@@ -76,5 +76,5 @@ def collect_conditions(state):
             merged[k] = v
 
     state.condition = merged
-    state.response = "조건을 업데이트했습니다."
+    state.reply = "조건을 업데이트했습니다."
     return state

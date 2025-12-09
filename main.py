@@ -9,8 +9,8 @@ from typing import Union, List, Optional
 from pydantic import BaseModel
 from pgvector.asyncpg import register_vector # type: ignore
 from contextlib import asynccontextmanager
-from common.logger import logger
-from common.constant import Const
+from common_fastapi.shared.logger import logger
+from common_fastapi.shared.constant import Const
 
 from route.chat import router as chat_router
 
