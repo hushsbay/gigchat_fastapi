@@ -2,49 +2,32 @@ from fastapi import FastAPI, status # https://fastapi.tiangolo.com/reference/sta
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.requests import Request
-import os, sys, json, asyncpg, re # type: ignore
-from pathlib import Path
-from dotenv import load_dotenv # type: ignore
-from typing import Union, List, Optional
-from pydantic import BaseModel
-from pgvector.asyncpg import register_vector # type: ignore
+import sys
+from dotenv import load_dotenv  # 프로젝트별 .env 로드용
 from contextlib import asynccontextmanager
 from common_fastapi.shared.logger import logger
 from common_fastapi.shared.constant import Const
+from common_fastapi.shared.db import init_db_pool, close_db_pool  # 공통 DB 모듈
+from common_fastapi.shared.config import validate_env  # 공통 환경 변수 검증
 
 from route.chat import router as chat_router
 
 origins = ["http://localhost:5173", "http://localhost:3000"]
+load_dotenv() # 프로젝트별 환경 변수 로드 (LOG_PATH 등)
+# API_KEY, DB_URL은 common_fastapi/.env 사용하고 LOG_PATH는 gigchat_fastapi/.env 사용
 
-load_dotenv()
-DATABASE_URL = os.getenv("NEON_DATABASE_URL")
-
-# Application lifespan: 생성시 DB풀 만들고 종료시 닫음 (기존 on_event('startup'/'shutdown')는 deprecated)
-# - 풀은 app.state.pool에 저장
-# - 기존 코드의 전역 `pool` 변수를 사용하던 곳을 위해 module-level pool 변수도 설정
-pool = None  # 데이터베이스 연결 풀 (하위 호환을 위해 module-level 변수 유지)
-@asynccontextmanager # 애플리케이션 시작/종료시 리소스 관리(연결/초기화 등)하는 데 사용되는 데코레이터
-async def lifespan(app: FastAPI):
-    global pool
-    # Ensure pgvector's type codec is registered on every new connection created by the pool
-    # by passing the `init` callback. This prevents intermittent "expected str, got list" errors
-    # where some pool connections lack the pgvector encoder registration.
-    # 위 내용 정리 : 아래 create_pool(...)에 init=register_vector를 전달하도록 수정
-    # 이로써 풀에서 생성되는 모든 커넥션에 pgvector 타입 코덱이 등록되어 간헐적인 "expected str, got list" 오류를 방지
-    # 안전을 위해 풀 생성 직후 단일 커넥션에 대해 호출하던 await register_vector(conn)도 그대로 남겨둠 (무해하며 충돌 없음)
-    pool = await asyncpg.create_pool(DATABASE_URL, min_size=1, max_size=10, command_timeout=60, init=register_vector)
-    async with pool.acquire() as conn: # conn = pool.acquire()를 비동기적으로 호출하고 아래 블럭이 끝나면 자동으로 리소스 해제함
-        await register_vector(conn) # 한번만 등록 (위 설명 참조)
-    app.state.pool = pool # app.state에 보관해 다른 핸들러에서 접근 가능하도록 함
-    # try: # load server keys once and store in app.state so all routers share the same source-of-truth
-    #     app.state.serverkeyArr = get_server_keys()
-    # except Exception:
-    #     app.state.serverkeyArr = []
+pool = None  # 하위 호환을 위한 module-level 변수
+@asynccontextmanager
+async def lifespan(app: FastAPI): # Application lifespan: 생성시 DB풀 만들고 종료시 닫음
+    global pool    
+    validate_env() # 공통 환경 변수 검증 (API_KEY, DB_URL)
+    pool = await init_db_pool() # common_fastapi의 DB 풀 초기화
+    app.state.pool = pool
     try:
-        yield # 여기까지 실행하고, 이제 애플리케이션(또는 엔드포인트)이 요청을 처리하도록 넘겨줘라고 하는 것임
-    finally: # yield를 사용한 의존성 컨텍스트가 끝날 때) 실행 : 여기서는 FastAPI가 종료될 때를 의미함
+        yield # 애플리케이션 실행
+    finally:
         try:
-            await pool.close()
+            await close_db_pool()  # common_fastapi의 close 함수 사용
         except Exception:
             logger.exception("Error closing DB pool on shutdown")
 
