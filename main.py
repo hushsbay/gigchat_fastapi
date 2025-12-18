@@ -7,7 +7,7 @@ from dotenv import load_dotenv  # 프로젝트별 .env 로드용
 from contextlib import asynccontextmanager
 from common_fastapi.shared.logger import logger
 from common_fastapi.shared.constant import Const
-from common_fastapi.shared.db import init_db_pool, close_db_pool  # 공통 DB 모듈
+from common_fastapi.shared.db import init_db_pool, close_db_pool, get_db_connection  # 공통 DB 모듈
 from common_fastapi.shared.config import validate_env  # 공통 환경 변수 검증
 
 from route.chat import router as chat_router
@@ -17,12 +17,24 @@ load_dotenv() # 프로젝트별 환경 변수 로드 (LOG_PATH 등)
 # API_KEY, DB_URL은 common_fastapi/.env 사용하고 LOG_PATH는 gigchat_fastapi/.env 사용
 
 pool = None  # 하위 호환을 위한 module-level 변수
+CATEGORIES = []  # DB에서 로드할 카테고리 목록 (kind='01', depth=1)
 @asynccontextmanager
 async def lifespan(app: FastAPI): # Application lifespan: 생성시 DB풀 만들고 종료시 닫음
-    global pool    
+    global pool, CATEGORIES
     validate_env() # 공통 환경 변수 검증 (API_KEY, DB_URL)
     pool = await init_db_pool() # common_fastapi의 DB 풀 초기화
     app.state.pool = pool
+    
+    try: # 카테고리 목록 로드
+        async with get_db_connection() as conn:
+            rows = await conn.fetch(
+                "SELECT nm FROM public.category WHERE kind = '01' AND depth = 1 ORDER BY seq"
+            )
+            CATEGORIES = [row['nm'] for row in rows] # logger.info(f"✅ 카테고리 로드 완료: {len(CATEGORIES)}개")
+    except Exception as e:
+        logger.exception(f"❌ 카테고리 로드 실패: {e}")
+        CATEGORIES = []  # 실패 시 빈 배열
+    
     try:
         yield # 애플리케이션 실행
     finally:

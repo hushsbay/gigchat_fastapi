@@ -36,15 +36,15 @@ graph.add_node("decide_search_type", decide_search_type)
 graph.add_node("sql_search", sql_search)
 graph.add_node("hybrid_search", hybrid_search)
 
-# 분기 트리
-# 1) 일자리조건 추가(classify_input)
-# 2) 일자리조건만으로 검색(sql_search)
-# 3) 일자리조건+채팅내용으로 검색(hybrid_search : 일반sql검색+vector검색)
-
-# 1. check_search (false) > classify_input (일자리 관련이면 조건 추출) > END
+# 분기 트리 : 사용자의 선택에 따라 아래와 같이 분기처리됨
+# 1) 일자리조건 추가(classify_input) => LLM 
+# 2-1) 일자리조건만으로 검색(sql_search) => Search (SQL)
+# 2-2) 일자리조건+채팅내용으로 검색(hybrid_search) => Search (SQL + Vector)
+# => 위는 아래와 같이 분기처리됨
+# 1) check_search (false) > classify_input (일자리 관련이면 조건 추출) > END
 #    check_search (false) > classify_input (일자리 관련 아니면) > END (일자리 관련 채팅하라고 안내)
-# 2. check_search (true) > decide_search_type (채팅내용 있으면) > hybrid_search > END (일반sql검색+vector검색)
-#    check_search (true) > decide_search_type (채팅내용 없으면) > sql_search > END
+# 2) check_search (true) > decide_search_type (채팅내용 없으면) > sql_search > END
+#    check_search (true) > decide_search_type (채팅내용 있으면) > hybrid_search > END (일반sql검색+vector검색)
 
 graph.set_entry_point("check_search")
 
