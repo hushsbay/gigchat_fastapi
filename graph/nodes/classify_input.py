@@ -27,7 +27,8 @@ def _normalize(cond: Dict[str, Any]) -> Dict[str, Any]: # 조건 정규화 - 모
         "start_time": None,
         "end_time": None,
         "hourly_wage": None,
-        "category": None
+        "category": None,
+        "requirements": None,
     }
     base.update(cond or {})
     return base
@@ -37,6 +38,8 @@ def classify_input(state): # LLM 한 번 호출로 아래 2단계 작업 수행
     
     import main # 순환 import 방지를 위한 지연 import
     CATEGORIES = main.CATEGORIES # print(f'===== {CATEGORIES}')
+
+    print(f'state.text===== {state.text}')
     
     prompt = f"""
     1. 당신은 일자리 챗봇입니다. 다음 작업을 수행하세요.
@@ -44,6 +47,7 @@ def classify_input(state): # LLM 한 번 호출로 아래 2단계 작업 수행
        2단계 : 관련되어 있다면, 그 입력에서 일자리 조건을 추출
     2. 사용자 입력: "{state.text}"
     3. 중요 규칙
+      사용자 입력중에 아래 내용과 관련 있다면 그건 알바/일자리를 찾기 위한 내용이라고 봐야 함.
       1) 성별(gender) : "남성" 또는 "여성" 으로만 표시
       2) 나이(age) : 숫자 또는 문자로 표현 가능하며 예는 아래와 같음
         - "30세" 또는 "30살" : 30 (숫자만)
@@ -75,6 +79,12 @@ def classify_input(state): # LLM 한 번 호출로 아래 2단계 작업 수행
         - {', '.join(CATEGORIES)}
         - 예1) 수영장 : 위 카테고리중 "문화/여가/생활"를 선택
         - 예2) 프로그래밍 : 위 카테고리중 "IT/인터넷"를 선택
+      9) 추가 조건(requirements)
+        - 만일 위 항목들이 아닌 사용자가 추가로 요구하는 알바/일자리와 관련 있는 내용이거나 자격증, 기존 일자리 경험이 있으면
+          아래 응답형식 json중에 requirements 값에 넣어줘 (중요함)
+        - 예1) 운전 면허증
+        - 예2) 수영 강사 자격증, 경험 등
+        - 예3) 바리스타 자격증, 경험 등
     ### 응답 형식 (반드시 이 JSON 형식으로만 응답)
     {{
       "job_related": true | false,
@@ -87,6 +97,7 @@ def classify_input(state): # LLM 한 번 호출로 아래 2단계 작업 수행
         "end_time": string | null,
         "hourly_wage": string | number | null,
         "category": string | null,
+        "requirements": string | null,
       }}
     }}
     ### 예시 1)
@@ -125,7 +136,7 @@ def classify_input(state): # LLM 한 번 호출로 아래 2단계 작업 수행
         if v not in (None, "", []):
             merged[k] = v
     state.condition = merged
-    state.reply = "조건을 추가 또는 업데이트했습니다."
+    state.reply = "일자리 조건을 추가 또는 업데이트했습니다."
     
     print(f"[classify_input] Job-related=True, extracted: {extracted}")
     print(f"[classify_input] Merged condition: {merged}")

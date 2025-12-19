@@ -16,7 +16,8 @@ DEFAULT_CONDITION = {
     "start_time": None,
     "end_time": None,
     "hourly_wage": None,
-    "category": None
+    "category": None,
+    "requirements": None # 추가 조건 : 이 조건 하나만 벡터검색이 수행되고 나머지는 모두 일반 SQL 검색 대상임
 }
 
 class ChatState(BaseModel):
@@ -37,14 +38,10 @@ graph.add_node("sql_search", sql_search)
 graph.add_node("hybrid_search", hybrid_search)
 
 # 분기 트리 : 사용자의 선택에 따라 아래와 같이 분기처리됨
-# 1) 일자리조건 추가(classify_input) => LLM 
-# 2-1) 일자리조건만으로 검색(sql_search) => Search (SQL)
-# 2-2) 일자리조건+채팅내용으로 검색(hybrid_search) => Search (SQL + Vector)
-# => 위는 아래와 같이 분기처리됨
-# 1) check_search (false) > classify_input (일자리 관련이면 조건 추출) > END
+# 1) check_search (false) > classify_input (일자리 관련이면 LLM으로 조건 추출) > END
 #    check_search (false) > classify_input (일자리 관련 아니면) > END (일자리 관련 채팅하라고 안내)
-# 2) check_search (true) > decide_search_type (채팅내용 없으면) > sql_search > END
-#    check_search (true) > decide_search_type (채팅내용 있으면) > hybrid_search > END (일반sql검색+vector검색)
+# 2) check_search (true) > decide_search_type (requirements 없으면) > sql_search > END
+#    check_search (true) > decide_search_type (requirements 있으면) > hybrid_search > END (일반sql검색+vector검색)
 
 graph.set_entry_point("check_search")
 
@@ -54,7 +51,7 @@ graph.add_conditional_edges("check_search",
 )
 
 graph.add_conditional_edges("decide_search_type",
-    lambda s: "hybrid_search" if s.text else "sql_search",
+    lambda s: "hybrid_search" if s.condition.get("requirements") else "sql_search",
     {"hybrid_search": "hybrid_search", "sql_search": "sql_search"},
 )
 

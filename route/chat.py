@@ -13,11 +13,16 @@ def chat_endpoint(payload: ChatRequest):
     try:        
         print(f'text===={payload.text}')
         print(f'condition===={payload.condition}')
+        print(f'search===={payload.search}')
+        print(f'embeddingModel===={payload.embeddingModel}')
+        print(f'similarityThreshold===={payload.similarityThreshold}')
         state = ChatState(
             userid=payload.userid,
             text=payload.text,
             condition=payload.condition or {},
-            search=payload.search
+            search=payload.search,
+            embeddingModel=payload.embeddingModel,
+            similarityThreshold=payload.similarityThreshold
         )
         result_state = workflow.invoke(state)
         print(f'result_state $$$$$ {result_state}')
