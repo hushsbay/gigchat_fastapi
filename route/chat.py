@@ -9,7 +9,7 @@ from common_fastapi.shared.constant import Const
 router = APIRouter()
 
 @router.post("", response_model=Union[Common, CodeMsgBase])
-def chat_endpoint(payload: ChatRequest):
+async def chat_endpoint(payload: ChatRequest):
     try:        
         print(f'text===={payload.text}')
         print(f'condition===={payload.condition}')
@@ -24,7 +24,7 @@ def chat_endpoint(payload: ChatRequest):
             embeddingModel=payload.embeddingModel,
             similarityThreshold=payload.similarityThreshold
         )
-        result_state = workflow.invoke(state)
+        result_state = await workflow.ainvoke(state)
         print(f'result_state $$$$$ {result_state}')
         return rsObj({
             "job_related": result_state.get("job_related"),
