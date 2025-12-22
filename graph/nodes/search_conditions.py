@@ -103,7 +103,8 @@ def build_where_conditions(
         """)
         params.append(region_pattern)
     
-    # 4. work_days 조건: varchar 배열 필드에서 월, 화 등 포함 여부
+    # 4. work_days 조건: DB에 저장된 모든 요일이 검색 조건에 포함되어야 함
+    # 예) DB에 "월화수" 저장 시, 검색 조건이 "월"만 있으면 X, "월화수" 또는 "월화수목"이면 O
     if condition.get("work_days"):
         work_days = condition["work_days"]
         if isinstance(work_days, str):
@@ -113,7 +114,7 @@ def build_where_conditions(
                 days_list = [work_days[i:i+1] for i in range(0, len(work_days), 1)]
             
             param_count += 1
-            where_parts.append(f" AND work_days && ${param_count}::varchar[]")
+            where_parts.append(f" AND ${param_count}::varchar[] @> work_days")
             params.append(days_list)
     
     # 5-6. start_time, end_time 조건: 전후 1시간 범위
