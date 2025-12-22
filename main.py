@@ -11,6 +11,7 @@ from common_fastapi.shared.db import init_db_pool, close_db_pool, get_db_connect
 from common_fastapi.shared.config import validate_env  # 공통 환경 변수 검증
 
 from route.chat import router as chat_router
+from route.admin import router as admin_router
 
 origins = ["http://localhost:5173", "http://localhost:3000"]
 load_dotenv() # 프로젝트별 환경 변수 로드 (LOG_PATH 등)
@@ -50,6 +51,7 @@ print(f"sys.executable={sys.executable}")
 print(f"sys.version={sys.version.splitlines()[0]}")
 
 app.include_router(chat_router, prefix="/chat")
+app.include_router(admin_router, prefix="/admin")
 
 # 예를 들어, localhost:8000/gigwork/doc_query/docid 라우팅인데 localhost:8000/gigwork/doc_query 만으로 요청시
 # fastapi가 { "detail": "Not Found" }으로 응답하는데 아래 @app.exception_handler(Exception)로 걸리지 않고 있음

@@ -25,6 +25,8 @@ class ChatState(BaseModel):
     text: str
     condition: Dict[str, Any] = DEFAULT_CONDITION.copy()
     search: bool = False
+    embeddingModel: Optional[str] = "jhgan"  # "jhgan" (768) or "openai" (1536)
+    similarityThreshold: Optional[float] = 0.4  # 벡터 유사도 임계값
     job_related: Optional[bool] = None
     result: Optional[List[Dict[str, Any]]] = []
     reply: Optional[str] = None

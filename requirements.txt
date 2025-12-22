@@ -4,8 +4,11 @@ python-dotenv
 pgvector
 asyncpg
 psycopg2-binary
-langchain
+#langchain
 langgraph
 openai
 numpy
 requests
+pydantic
+sentence-transformers
+

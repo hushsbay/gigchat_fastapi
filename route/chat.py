@@ -10,12 +10,7 @@ router = APIRouter()
 
 @router.post("", response_model=Union[Common, CodeMsgBase])
 async def chat_endpoint(payload: ChatRequest):
-    try:        
-        print(f'text===={payload.text}')
-        print(f'condition===={payload.condition}')
-        print(f'search===={payload.search}')
-        print(f'embeddingModel===={payload.embeddingModel}')
-        print(f'similarityThreshold===={payload.similarityThreshold}')
+    try:
         state = ChatState(
             userid=payload.userid,
             text=payload.text,
@@ -25,7 +20,11 @@ async def chat_endpoint(payload: ChatRequest):
             similarityThreshold=payload.similarityThreshold
         )
         result_state = await workflow.ainvoke(state)
-        print(f'result_state $$$$$ {result_state}')
+        
+        # 검색 결과 개수만 로그 출력
+        result_count = len(result_state.get("result", []))
+        logger.info(f"[chat_endpoint] 검색 완료 - {result_count}개 결과")
+        
         return rsObj({
             "job_related": result_state.get("job_related"),
             "condition": result_state.get("condition"),
